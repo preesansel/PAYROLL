@@ -1,0 +1,27 @@
+package com.payroll.controller;
+
+
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.payroll.model.Payroll;
+import com.payroll.service.PayrollService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/payroll")
+public class PayrollController {
+
+    @Autowired
+    private PayrollService payrollService;
+
+    @GetMapping("/calculate")
+    public List<Payroll> calculatePayroll() throws JsonMappingException, JsonProcessingException {
+        return payrollService.calculatePayrolls();
+    }
+}

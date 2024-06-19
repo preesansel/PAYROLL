@@ -1,0 +1,29 @@
+package com.payroll.dto;
+
+
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
+@Data
+@AllArgsConstructor
+public class PayrollDetails {
+    private double basicPay;
+    private double houseRentAllowance;
+    private double specialAllowance;
+    private double epf;
+    private double incomeTax;
+    private double professionalTax;
+
+    private double ytdBasic;
+    private double ytdHouseRent;
+    private double ytdSpecial;
+    private double ytdEpf;
+    private double ytdIncomeTax;
+    private double ytdProfessionalTax;
+
+    private double grossEarning;
+    private double grossDeduction;
+    private double netPay;  
+    
+}

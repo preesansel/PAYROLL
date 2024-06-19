@@ -1,0 +1,102 @@
+//package com.payroll.controller;
+//
+//import static org.assertj.core.api.Assertions.assertThat;
+//
+//import org.junit.jupiter.api.Test;
+//import org.springframework.beans.factory.annotation.Autowired;
+//
+//public class ControllerTest {
+////	@Autowired
+////	PayrollController controller;
+//// 
+////	@Test
+////	void contextLoads() {
+////		assertThat(controller).isNotNull();
+////	}
+//}
+package com.payroll.controller;
+
+import com.payroll.dto.EmployeeDetails;
+import com.payroll.dto.PayrollDetails;
+import com.payroll.model.Payroll;
+import com.payroll.service.PayrollService;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
+public class PayrollControllerTest {
+
+    @Mock
+    private PayrollService payrollService;
+
+    @InjectMocks
+    private PayrollController payrollController;
+
+    @BeforeEach
+    public void setup() {
+        // Mock behavior for calculatePayrolls
+        List<Payroll> mockPayrolls = new ArrayList<>();
+        Payroll payroll1 = new Payroll(1L, 101L, LocalDate.of(2024, 6, 1), 2500.0, 1000.0, 500.0, 200.0, 100.0, 0);
+        Payroll payroll2 = new Payroll(2L, 102L, LocalDate.of(2024, 6, 1), 2800.0, 1200.0, 600.0, 250.0, 120.0, 1);
+        mockPayrolls.add(payroll1);
+        mockPayrolls.add(payroll2);
+        when(payrollService.calculatePayrolls()).thenReturn(mockPayrolls);
+
+        // Mock behavior for getPayrollDetails
+        PayrollDetails mockPayrollDetails = new PayrollDetails(2500.0, 1000.0, 500.0, 200.0, 100.0, 0, 4200.0, 450.0, 3750.0,
+                5000.0, 2200.0, 800.0, 300.0, 150.0, 0, 5500.0, 600.0);
+        when(payrollService.getPayrollDetails(eq(101L), anyInt(), anyInt())).thenReturn(mockPayrollDetails);
+
+        // Mock behavior for getEmployeeDetails
+        EmployeeDetails mockEmployeeDetails = new EmployeeDetails(101L, "John Doe", "john.doe@example.com", "HR");
+        when(payrollService.getEmployeeDetails(eq(101L))).thenReturn(mockEmployeeDetails);
+    }
+
+    @Test
+    public void testCalculatePayrolls() {
+        ResponseEntity<List<Payroll>> response = payrollController.calculatePayrolls();
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        List<Payroll> payrolls = response.getBody();
+        assertEquals(2, payrolls.size());
+        assertEquals(101L, payrolls.get(0).getEmployeeId());
+        assertEquals(102L, payrolls.get(1).getEmployeeId());
+    }
+
+    @Test
+    public void testGetPayrollDetails() {
+        ResponseEntity<PayrollDetails> response = payrollController.getPayrollDetails(101L, 2024, 6);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        PayrollDetails payrollDetails = response.getBody();
+        assertEquals(2500.0, payrollDetails.getBasicPay());
+        assertEquals(1000.0, payrollDetails.getHouseRentAllowance());
+        assertEquals(500.0, payrollDetails.getSpecialAllowance());
+        assertEquals(200.0, payrollDetails.getEpf());
+        assertEquals(100.0, payrollDetails.getIncomeTax());
+        assertEquals(0, payrollDetails.getLop());
+    }
+
+    @Test
+    public void testGetEmployeeDetails() {
+        ResponseEntity<EmployeeDetails> response = payrollController.getEmployeeDetails(101L);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        EmployeeDetails employeeDetails = response.getBody();
+        assertEquals(101L, employeeDetails.getEmployeeId());
+        assertEquals("John Doe", employeeDetails.getEmployeeName());
+        assertEquals("john.doe@example.com", employeeDetails.getEmail());
+        assertEquals("HR", employeeDetails.getDepartment());
+    }
+}
+

@@ -1,0 +1,11 @@
+package com.payroll.controller;
+
+public class ControllerTest {
+	@Autowired
+	DeclarationController controller;
+ 
+	@Test
+	void contextLoads() {
+		assertThat(controller).isNotNull();
+	}
+}

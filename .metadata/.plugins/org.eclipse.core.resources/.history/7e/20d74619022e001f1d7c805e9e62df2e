@@ -1,0 +1,19 @@
+package com.payroll;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+
+import com.payroll.service.PayrollService;
+
+@SpringBootTest
+class PayProcessApplicationTests {
+	@Autowired
+    private PayrollService payrollSerivce;
+ 
+	@Test
+	void contextLoads() {
+		 assertThat(payrollService).isNotNull();
+	}
+
+}

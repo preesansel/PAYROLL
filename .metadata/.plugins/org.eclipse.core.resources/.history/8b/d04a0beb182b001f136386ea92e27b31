@@ -1,0 +1,53 @@
+package com.payroll.model;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import javax.persistence.*;
+import java.util.Date;
+
+@Entity
+@Table(name = "employees")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class Employee {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long employee_id;
+
+    @Column(name = "employee_name", nullable = true)
+    private String employee_name;
+
+    @Column(nullable = true)
+    private String designation;
+
+    @Temporal(TemporalType.DATE)
+    @Column(nullable = true)
+    private Date doj;
+
+    @Column(nullable = true)
+    private String grade;
+
+    @Column(name = "pan_id", nullable = true)
+    private String pan_id;
+
+    @Column(nullable = true)
+    private String department;
+
+    @Column(nullable = true)
+    private String location;
+
+    @Column(name = "uan_no", nullable = true)
+    private String uan_no;
+
+    @Column(name = "pf_no", nullable = true)
+    private String pf_no;
+
+    @Column(name = "bank_name", nullable = true)
+    private String bank_name;
+
+    @Column(name = "account_name", nullable = true)
+    private String account_name;
+}

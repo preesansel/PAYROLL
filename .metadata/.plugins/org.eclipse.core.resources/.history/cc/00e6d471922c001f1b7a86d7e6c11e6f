@@ -1,0 +1,98 @@
+package com.payroll.dto;
+
+import java.text.DecimalFormat;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
+@Data
+@AllArgsConstructor
+public class PayrollDetails {
+    private double basicPay;
+    private double houseRentAllowance;
+    private double specialAllowance;
+    private double epf;
+    private double incomeTax;
+    private double professionalTax;
+    private int lop;  
+
+    private double ytdBasic;
+    private double ytdHouseRent;
+    private double ytdSpecial;
+    private double ytdEpf;
+    private double ytdIncomeTax;
+    private double ytdProfessionalTax;
+
+    private double grossEarning;
+    private double grossDeduction;
+    private double netPay;  
+    
+
+    private String formatDouble(double value) {
+        DecimalFormat df = new DecimalFormat("0.00");
+        return df.format(value);
+    }
+    public String getFormattedBasicPay() {
+        return formatDouble(basicPay);
+    }
+
+    public String getFormattedHouseRentAllowance() {
+        return formatDouble(houseRentAllowance);
+    }
+
+    public String getFormattedSpecialAllowance() {
+        return formatDouble(specialAllowance);
+    }
+
+    public String getFormattedEpf() {
+        return formatDouble(epf);
+    }
+
+    public String getFormattedIncomeTax() {
+        return formatDouble(incomeTax);
+    }
+
+    public String getFormattedProfessionalTax() {
+        return formatDouble(professionalTax);
+    }
+
+    public String getFormattedYtdBasic() {
+        return formatDouble(ytdBasic);
+    }
+
+    public String getFormattedYtdHouseRent() {
+        return formatDouble(ytdHouseRent);
+    }
+
+    public String getFormattedYtdSpecial() {
+        return formatDouble(ytdSpecial);
+    }
+
+    public String getFormattedYtdEpf() {
+        return formatDouble(ytdEpf);
+    }
+
+    public String getFormattedYtdIncomeTax() {
+        return formatDouble(ytdIncomeTax);
+    }
+
+    public String getFormattedYtdProfessionalTax() {
+        return formatDouble(ytdProfessionalTax);
+    }
+
+    public String getFormattedGrossEarning() {
+        return formatDouble(grossEarning);
+    }
+
+    public String getFormattedGrossDeduction() {
+        return formatDouble(grossDeduction);
+    }
+
+    public String getFormattedNetPay() {
+        return formatDouble(netPay);
+    }
+
+
+    
+    
+}

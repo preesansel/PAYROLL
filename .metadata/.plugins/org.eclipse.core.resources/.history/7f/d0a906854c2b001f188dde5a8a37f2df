@@ -1,0 +1,18 @@
+package com.payroll.config;
+
+
+
+import com.payroll.model.Payroll;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
+
+@Configuration
+public class PayrollConfig {
+
+    @Bean
+    @Scope("prototype")
+    public Payroll payroll() {
+        return new Payroll();
+    }
+}

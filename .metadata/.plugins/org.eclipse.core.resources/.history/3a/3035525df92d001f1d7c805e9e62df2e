@@ -1,0 +1,16 @@
+package com.payroll.exceptions;
+
+
+
+public class jj extends RuntimeException {
+    private static final long serialVersionUID = 1L;
+
+    public jj(String message) {
+        super(message);
+    }
+
+    public jj(String message, Throwable cause) {
+        super(message, cause);
+    }
+}
+

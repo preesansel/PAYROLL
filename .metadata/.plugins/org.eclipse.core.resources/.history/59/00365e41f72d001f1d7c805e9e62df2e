@@ -1,0 +1,16 @@
+package com.payroll.exceptions;
+
+
+
+public class PayrollServiceException extends RuntimeException {
+    private static final long serialVersionUID = 1L;
+
+    public PayrollServiceException(String message) {
+        super(message);
+    }
+
+    public PayrollServiceException(String message, Throwable cause) {
+        super(message, cause);
+    }
+}
+

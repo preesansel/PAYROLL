@@ -1,0 +1,16 @@
+package com.payroll.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class PayrollRequest {
+    private Long employeeId;
+    private int year;
+    private int month;
+
+   
+}

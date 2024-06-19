@@ -1,0 +1,33 @@
+package com.payroll.model;
+
+package com.example.model;
+
+import java.time.LocalDate;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Entity
+@Table(name = "salary")
+
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
+public class Salary {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long employeeId;
+    private double basic;
+    private double hra;
+    private double specialAllowance;
+    private double epf;
+    private double grossSalary;
+    private double gratuity;
+    private String payband;
+}

@@ -1,0 +1,163 @@
+package com.payroll.service;
+
+
+import com.payroll.dto.EmployeeSalaryDTO;
+import com.payroll.dto.PayrollDetails;
+import com.payroll.dto.TaxDTO;
+import com.payroll.model.Payroll;
+import com.payroll.repository.EmployeeRepository;
+import com.payroll.repository.PayrollRepository;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.ZoneId;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.stream.Collectors;
+
+@Service
+@Slf4j
+public class PayrollService {
+
+    private EmployeeRepository employeeRepository;
+
+    private PayrollRepository payrollRepository;
+
+    private RestTemplate restTemplate;
+
+    public PayrollService(@Autowired EmployeeRepository employeeRepository,
+                          @Autowired PayrollRepository payrollRepository,
+                          @Autowired RestTemplateBuilder restTemplateBuilder) {
+        this.employeeRepository = employeeRepository;
+        this.payrollRepository = payrollRepository;
+        this.restTemplate = restTemplateBuilder.build();
+    }
+
+
+    public List<Payroll> calculatePayrolls() {
+
+        List<EmployeeSalaryDTO> employeeSalaries = employeeRepository.findEmployeeSalaryDetails();
+        log.info("{}",employeeSalaries.size());
+        // Fetch tax details from the tax service
+        String taxServiceUrl = "http://localhost:8883/tax";
+
+        Map<Long, TaxDTO> taxResponse = restTemplate.exchange(
+                taxServiceUrl, HttpMethod.GET, null, new ParameterizedTypeReference<Map<Long, TaxDTO>>() {
+                }
+        ).getBody();
+        log.info("{}",taxResponse.size());
+
+
+        Random random = new Random();
+
+
+
+        // Calculate payroll for each employee
+        List<Payroll> payrolls = employeeSalaries.stream().map(employeeSalary -> {
+            TaxDTO taxes = taxResponse.get(employeeSalary.getEmployeeId());
+
+            if (taxes == null) {
+                log.error("Taxes not found for {}", employeeSalary.getEmployeeId());
+                return null;
+            }
+
+            // Get a new Payroll instance 
+            Payroll payroll = new Payroll();
+            payroll.setEmployeeId(employeeSalary.getEmployeeId());
+            payroll.setPayDate(LocalDate.now());
+
+            // Calculate monthly salary details
+            double basicPay = employeeSalary.getBasicPay() / 12;
+            double houseRentAllowance = employeeSalary.getHouseRentAllowance() / 12;
+            double specialAllowance = employeeSalary.getSpecialAllowance() / 12;
+            double epf = employeeSalary.getEpf() / 12;
+
+
+         // Get the current year and month
+            YearMonth currentYearMonth = YearMonth.now();
+
+            // Calculate standard working days for the current month
+            int currentMonthDayCount = currentYearMonth.lengthOfMonth();
+            int workingDays = currentMonthDayCount;
+
+            // Check if the employee joined in the current month
+            LocalDate doj = employeeSalary.getDoj().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            if (doj.getYear() == currentYearMonth.getYear() && doj.getMonth() == currentYearMonth.getMonth()) {
+                // Adjust standard working days 
+                int startingDate = doj.getDayOfMonth();
+                workingDays -= startingDate;
+            }
+
+            // Adjust standard working days - leave without pay (LOP)
+            int lop = random.nextInt(10); 
+            workingDays -= lop;
+
+            basicPay = basicPay * workingDays / currentMonthDayCount;
+            houseRentAllowance = houseRentAllowance * workingDays / currentMonthDayCount;
+            specialAllowance = specialAllowance * workingDays / currentMonthDayCount;
+            epf = epf * workingDays / currentMonthDayCount;
+
+
+            payroll.setBasicPay(basicPay);
+            payroll.setHouseRentAllowance(houseRentAllowance);
+            payroll.setSpecialAllowance(specialAllowance);
+            payroll.setEpf(epf);
+            payroll.setIncomeTax(taxes.getIncomeTax());
+            payroll.setProfessionalTax(taxes.getProfessionalTax());
+
+
+            payroll.setLop(lop);
+
+            return payroll;
+        }).collect(Collectors.toList());
+
+
+        // Filter out any null entries
+        payrolls = payrolls.stream().filter(p -> p != null).collect(Collectors.toList());
+
+        // Save all payrolls to the repository
+        payrollRepository.saveAll(payrolls);
+
+        return payrolls;
+    }
+
+
+    public PayrollDetails getPayrollDetails(Long employeeId, int year, int month) {
+        Payroll payroll = payrollRepository.findPayrollByEmployeeIdAndMonthYear(employeeId, year, month);
+
+        if (payroll == null) {
+            throw new IllegalArgumentException("No payroll found for the specified employee, month, and year");
+        }
+
+        int financialYear = (month >= 4) ? year : year - 1;
+        int nextFinancialYear = financialYear + 1;
+
+        Object[] ytdSums = payrollRepository.findYtdSumsByEmployeeIdAndFinancialYear(employeeId, financialYear, nextFinancialYear);
+
+        double ytdBasic = ytdSums[0] != null ? (Double) ytdSums[0] : 0.0;
+        double ytdHouseRent = ytdSums[1] != null ? (Double) ytdSums[1] : 0.0;
+        double ytdSpecial = ytdSums[2] != null ? (Double) ytdSums[2] : 0.0;
+        double ytdEpf = ytdSums[3] != null ? (Double) ytdSums[3] : 0.0;
+        double ytdIncomeTax = ytdSums[4] != null ? (Double) ytdSums[4] : 0.0;
+        double ytdProfessionalTax = ytdSums[5] != null ? (Double) ytdSums[5] : 0.0;
+
+        double grossEarning = payroll.getBasicPay() + payroll.getHouseRentAllowance() + payroll.getSpecialAllowance();
+        double grossDeduction = payroll.getEpf() + payroll.getIncomeTax() + payroll.getProfessionalTax();
+        double netPay = grossEarning - grossDeduction;
+
+        return new PayrollDetails(payroll.getBasicPay(), payroll.getHouseRentAllowance(), payroll.getSpecialAllowance(),
+                                  payroll.getEpf(), payroll.getIncomeTax(), payroll.getProfessionalTax(),
+                                  payroll.getLop(),  
+                                  ytdBasic, ytdHouseRent, ytdSpecial, ytdEpf, ytdIncomeTax, ytdProfessionalTax,
+                                  grossEarning, grossDeduction, netPay);
+    }
+}

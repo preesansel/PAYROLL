@@ -1,0 +1,5 @@
+package com.payroll.exceptions;
+
+public class ErrorDetails {
+
+}

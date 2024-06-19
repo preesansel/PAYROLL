@@ -1,0 +1,14 @@
+package com.payroll.repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import com.payroll.model.Employee;
+
+
+@Repository
+public interface EmployeeRepository extends JpaRepository<Employee, Long> {
+	@Query("SELECT new com.payroll.dto.EmployeeSalaryDTO(e.employeeId, e.doj, s.basicPay, s.houseRentAllowance, s.specialAllowance, s.epf) " +
+	           "FROM Employee e JOIN Salary s ON e.employeeId = s.employeeId")
+	    List<EmployeeSalaryDTO> findEmployeeSalaryDetails();
+}

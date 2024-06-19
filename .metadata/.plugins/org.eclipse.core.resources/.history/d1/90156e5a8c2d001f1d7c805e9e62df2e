@@ -1,0 +1,72 @@
+package com.payroll.controller;
+
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.payroll.dto.EmployeeDetails;
+import com.payroll.dto.PayrollDetails;
+import com.payroll.dto.PayrollRequest;
+import com.payroll.dto.TaxDTO;
+import com.payroll.model.Payroll;
+import com.payroll.repository.EmployeeRepository;
+import com.payroll.service.PayrollService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+import java.util.Map;
+@CrossOrigin(origins = "*")
+@RestController
+@RequestMapping("/payroll")
+
+public class PayrollController {
+
+    private PayrollService payrollService;
+    
+	  @Autowired
+	    public PayrollController(PayrollService payrollService) {
+	        this.payrollService = payrollService;
+	    }
+
+    @GetMapping("/calculate")
+    public ResponseEntity<List<Payroll>> test() throws JsonProcessingException {
+        List<Payroll> payrolls = payrollService.calculatePayrolls();
+        return ResponseEntity.ok(payrolls);
+    }
+
+    @GetMapping("/details")
+    public ResponseEntity<PayrollDetails> getPayrollDetails(
+            @RequestParam Long employeeId,
+            @RequestParam int year,
+            @RequestParam int month) {
+
+        try {
+            PayrollDetails payrollDetails = payrollService.getPayrollDetails(employeeId, year, month);
+            return ResponseEntity.ok(payrollDetails);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+    @GetMapping("/EmployeeDetails/{employeeId}")
+    public ResponseEntity<EmployeeDetails> getEmployeeDetails(@PathVariable Long employeeId) {
+        EmployeeDetails employeeDTO = payrollService.getEmployeeDetails(employeeId);
+        if (employeeDTO != null) {
+            return ResponseEntity.ok(employeeDTO);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+
+
+}
